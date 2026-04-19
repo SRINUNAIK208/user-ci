@@ -2,7 +2,7 @@
 
 def configMap = [
     project : "roboshop",
-    component : "catalogue"
+    component : "user"
 ]
 
 nodeEkspipeline.call(configMap)
