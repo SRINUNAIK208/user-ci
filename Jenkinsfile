@@ -109,17 +109,17 @@ pipeline {
         //     }
         // }
     }
-    // stage('trigger deployment'){
-    //     steps{
-    //         build job: 'user-cd',
-    //         parameters: [
-    //             string(name: 'appVersion', value: "${appVersion}")
-    //             string(name: 'deploy_to', value:'dev')
-    //         ]
-    //         wait: false,
-    //         propagate: false
-    //     }
-    // }
+    stage('trigger deployment'){
+        steps{
+            build job: 'user-cd',
+            parameters: [
+                string(name: 'appVersion', value: "${appVersion}")
+                string(name: 'deploy_to', value:'dev')
+            ]
+            wait: false,
+            propagate: false
+        }
+    }
     post{
         always {
             echo "i am always block"
