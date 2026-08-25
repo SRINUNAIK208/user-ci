@@ -23,88 +23,89 @@ pipeline {
                 }
             }
         }
-    }
-    stage('install dependencies'){
-        steps{
-            sh """
-               npm install
-            """
+        
+        stage('install dependencies'){
+            steps{
+                sh """
+                npm install
+                """
+            }
         }
-    }
-    // stage('scan libraries alerts'){
-    //     steps{
-    //         script{
-    //             def alerts = readJSON text: response
+        // stage('scan libraries alerts'){
+        //     steps{
+        //         script{
+        //             def alerts = readJSON text: response
 
-    //             def highCriticalOpen = alerts.findAll { alert ->
+        //             def highCriticalOpen = alerts.findAll { alert ->
 
-    //                 def severity = alert.security_advisory?.severity?.toLowerCase()
-    //                 def state = alert.state?.toLowerCase()
+        //                 def severity = alert.security_advisory?.severity?.toLowerCase()
+        //                 def state = alert.state?.toLowerCase()
 
-    //                 state == 'open' &&
-    //                 (severity == 'high' || severity == 'critical')
-    //             }
+        //                 state == 'open' &&
+        //                 (severity == 'high' || severity == 'critical')
+        //             }
 
-    //             if (highCriticalOpen.size() > 0) {
+        //             if (highCriticalOpen.size() > 0) {
 
-    //                 echo "❌ Found ${highCriticalOpen.size()} OPEN HIGH/CRITICAL Dependabot alerts"
+        //                 echo "❌ Found ${highCriticalOpen.size()} OPEN HIGH/CRITICAL Dependabot alerts"
 
-    //                 highCriticalOpen.each { alert ->
-    //                     echo "Package: ${alert.dependency.package.name}"
-    //                     echo "Severity: ${alert.security_advisory.severity}"
-    //                     echo "State: ${alert.state}"
-    //                 }
+        //                 highCriticalOpen.each { alert ->
+        //                     echo "Package: ${alert.dependency.package.name}"
+        //                     echo "Severity: ${alert.security_advisory.severity}"
+        //                     echo "State: ${alert.state}"
+        //                 }
 
-    //                 error("Dependabot quality gate failed")
+        //                 error("Dependabot quality gate failed")
 
-    //             } else {
+        //             } else {
 
-    //                 echo "✅ No OPEN HIGH/CRITICAL Dependabot alerts found."
+        //                 echo "✅ No OPEN HIGH/CRITICAL Dependabot alerts found."
 
-    //             }
-    //         }
-    //     }
-    // }
-    // stage('scan the source code'){
-    //     environment {
-    //         scannerHome = tool 'sonar'
-    //     }
-    //     steps{
-    //         withSonarQubeEnv('sonar' ){
-    //             sh """
-    //                ${scannerHome}/bin/sonar-scanner
-    //             """
-    //         }
+        //             }
+        //         }
+        //     }
+        // }
+        // stage('scan the source code'){
+        //     environment {
+        //         scannerHome = tool 'sonar'
+        //     }
+        //     steps{
+        //         withSonarQubeEnv('sonar' ){
+        //             sh """
+        //                ${scannerHome}/bin/sonar-scanner
+        //             """
+        //         }
 
-    //     }
-    // }
-    //  stage("Quality Gate") {
-    //     steps {
-    //         waitForQualityGate abortPipeline: true
-    //     }
-    // }
-    stages('Build the docker image'){
-        steps{
-           withAWS(credentials: 'aws-cred', region: 'us-east-1'){
-             sh """
-                aws ecr get-login-password --region ${REGION} | docker login --username AWS --password-stdin ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com
-                docker build -t ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com/${project}/${component}:${appVersion} .
-                docker push ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com/${project}/${component}:${appVersion}
-             """
-           }
-        }
-    }
-    stage('scan ecr image'){
-        steps{
+        //     }
+        // }
+        //  stage("Quality Gate") {
+        //     steps {
+        //         waitForQualityGate abortPipeline: true
+        //     }
+        // }
+        stages('Build the docker image'){
+            steps{
             withAWS(credentials: 'aws-cred', region: 'us-east-1'){
                 sh """
-                    aws ecr describe-image-scan-findings \
-                        --repository-name roboshop/user \
-                        --image-id imageTag=${appVersion} \
-                        --region us-east-1 \
-                        --query 'imageScanFindings.findingSeverityCounts'
+                    aws ecr get-login-password --region ${REGION} | docker login --username AWS --password-stdin ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com
+                    docker build -t ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com/${project}/${component}:${appVersion} .
+                    docker push ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com/${project}/${component}:${appVersion}
                 """
+            }
+            }
+        }
+        stage('scan ecr image'){
+            steps{
+                withAWS(credentials: 'aws-cred', region: 'us-east-1'){
+                    sh """
+                        aws ecr describe-image-scan-findings \
+                            --repository-name roboshop/user \
+                            --image-id imageTag=${appVersion} \
+                            --region us-east-1 \
+                            --query 'imageScanFindings.findingSeverityCounts'
+                    """
 
+                }
             }
         }
     }
