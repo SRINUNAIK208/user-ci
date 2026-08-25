@@ -3,7 +3,7 @@ pipeline {
         label 'AGENT-1'
     }
     options {
-        timeout(time: '30', unit: 'MINUTES')
+        timeout(time:30, unit: 'MINUTES')
         disableConcurrentBuilds();
     }
     environment{
@@ -85,13 +85,13 @@ pipeline {
         // }
         stages('Build the docker image'){
             steps{
-            withAWS(credentials: 'aws-cred', region: 'us-east-1'){
-                sh """
-                    aws ecr get-login-password --region ${REGION} | docker login --username AWS --password-stdin ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com
-                    docker build -t ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com/${project}/${component}:${appVersion} .
-                    docker push ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com/${project}/${component}:${appVersion}
-                """
-            }
+                withAWS(credentials: 'aws-cred', region: 'us-east-1'){
+                    sh """
+                        aws ecr get-login-password --region ${REGION} | docker login --username AWS --password-stdin ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com
+                        docker build -t ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com/${project}/${component}:${appVersion} .
+                        docker push ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com/${project}/${component}:${appVersion}
+                    """
+                }
             }
         }
         stage('scan ecr image'){
@@ -127,7 +127,7 @@ pipeline {
         success {
             echo "i am success"
         }
-        failed {
+        failure {
             echo "i am failed"
         }
     }
