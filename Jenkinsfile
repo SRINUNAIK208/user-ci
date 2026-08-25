@@ -83,7 +83,7 @@ pipeline {
         //         waitForQualityGate abortPipeline: true
         //     }
         // }
-        stages('Build the docker image'){
+        stage('Build the docker image'){
             steps{
                 withAWS(credentials: 'aws-cred', region: 'us-east-1'){
                     sh """
