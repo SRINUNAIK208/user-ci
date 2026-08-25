@@ -94,20 +94,20 @@ pipeline {
                 }
             }
         }
-        stage('scan ecr image'){
-            steps{
-                withAWS(credentials: 'aws-cred', region: 'us-east-1'){
-                    sh """
-                        aws ecr describe-image-scan-findings \
-                            --repository-name roboshop/user \
-                            --image-id imageTag=${appVersion} \
-                            --region us-east-1 \
-                            --query 'imageScanFindings.findingSeverityCounts'
-                    """
+        // stage('scan ecr image'){
+        //     steps{
+        //         withAWS(credentials: 'aws-cred', region: 'us-east-1'){
+        //             sh """
+        //                 aws ecr describe-image-scan-findings \
+        //                     --repository-name roboshop/user \
+        //                     --image-id imageTag=${appVersion} \
+        //                     --region us-east-1 \
+        //                     --query 'imageScanFindings.findingSeverityCounts'
+        //             """
 
-                }
-            }
-        }
+        //         }
+        //     }
+        // }
     }
     // stage('trigger deployment'){
     //     steps{
